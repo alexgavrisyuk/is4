@@ -4,6 +4,7 @@ using IdentityServer.Core.CommandHandlers;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,11 +34,14 @@ namespace IdentityServer.Api
                     options.AddPolicy(
                         "CorsPolicy",
                         builder => builder
-                            .SetIsOriginAllowed(_ => true)
+                            .AllowAnyOrigin()
                             .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials());
+                            .AllowAnyHeader());
                 });
+
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
             
             services.ConfigureIdentityServer(Configuration);
 
@@ -53,17 +57,23 @@ namespace IdentityServer.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseStaticFiles();
+   
             app.UseRouting();
-
+            
+            
             app.UseAuthentication();
             app.UseAuthorization();
-            
-            
+
             app.UseCors("CorsPolicy");
+            app.UseIdentityServer();
+
             
+            
+            
+         
             app.UseEndpoints(endpoints => endpoints.MapControllers());
             
-            app.UseIdentityServer();
         }
     }
 }

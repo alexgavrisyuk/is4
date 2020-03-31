@@ -1,6 +1,7 @@
 using System.Reflection;
 using IdentityServer.Domain;
 using IdentityServer.Infrastructure;
+using IdentityServer.Infrastructure.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,8 @@ namespace IdentityServer.Api.Extensions
             
             // configure identity server with in-memory stores, keys, clients and scopes
             services.AddIdentityServer()
+                // .AddInMemoryApiResources(Config.GetApiResources())
+                // .AddInMemoryClients(Config.GetClients())
                 // .AddTestUsers()
                 .AddDeveloperSigningCredential()
                 .AddAspNetIdentity<ApplicationUser>()

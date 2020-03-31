@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using IdentityServer.Infrastructure.Enums;
 using IdentityServer.Infrastructure.Options;
 using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,7 @@ namespace IdentityServer.Infrastructure.Helpers
                 {
                     foreach (var client in Config.GetClients())
                     {
-                        context.Clients.Add(client);
+                        context.Clients.Add(client.ToEntity());
                     }
                     context.SaveChanges();
                 }
@@ -34,7 +35,7 @@ namespace IdentityServer.Infrastructure.Helpers
                 {
                     foreach (var resource in Config.GetIdentityResources())
                     {
-                        context.IdentityResources.Add(resource);
+                        context.IdentityResources.Add(resource.ToEntity());
                     }
                     context.SaveChanges();
                 }
@@ -43,7 +44,7 @@ namespace IdentityServer.Infrastructure.Helpers
                 {
                     foreach (var resource in Config.GetApiResources())
                     {
-                        context.ApiResources.Add(resource);
+                        context.ApiResources.Add(resource.ToEntity());
                     }
                     context.SaveChanges();
                 }
