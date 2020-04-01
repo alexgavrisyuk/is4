@@ -1,6 +1,8 @@
 using System.Reflection;
 using IdentityServer.Api.Extensions;
+using IdentityServer.Api.Services;
 using IdentityServer.Core.CommandHandlers;
+using IdentityServer4.Services;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,12 +15,15 @@ namespace IdentityServer.Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostEnvironment environment)
         {
             Configuration = configuration;
+            Environment = environment;
         }
         
         public IConfiguration Configuration { get; set; }
+
+        public IHostEnvironment Environment;
         
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -43,8 +48,10 @@ namespace IdentityServer.Api
             services.AddControllersWithViews();
             services.AddRazorPages();
             
-            services.ConfigureIdentityServer(Configuration);
+            services.ConfigureIdentityServer(Configuration, Environment);
 
+            // services.AddTransient<ITokenCreationService, JwtTokenCreationService>();
+            
 
             services.AddMediatR(Assembly.GetExecutingAssembly(), typeof(UserCommandsHandler).Assembly);
         }

@@ -1,8 +1,12 @@
 using System;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using IdentityServer.Api.Extensions;
 using IdentityServer.Infrastructure.Helpers;
 using IdentityServer.Infrastructure.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -36,9 +40,22 @@ namespace IdentityServer.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder
+                        .UseKestrel(opts =>
+                        {
+                            var configuration = opts.ApplicationServices.GetService<IConfiguration>();
+                            var hostenv = opts.ApplicationServices.GetService<IHostEnvironment>();
+                            opts.Listen(IPAddress.Loopback, 5000);
+                            opts.Listen(IPAddress.Loopback, 5001, listenOptions =>
+                            {
+                                listenOptions.UseHttps(
+                                    new X509Certificate2(IServiceCollectionExtensions.GetCerfificate(hostenv)));
+                            });
+                        });
                     webBuilder.UseStartup<Startup>();
                 });
         

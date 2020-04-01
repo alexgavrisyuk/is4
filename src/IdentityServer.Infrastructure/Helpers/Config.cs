@@ -28,12 +28,10 @@ namespace IdentityServer.Infrastructure.Helpers
                     RequireConsent = false,
                     RequirePkce = true,
                     
-                    RequireClientSecret = false,
-
                     AccessTokenLifetime = (int)TimeSpan.FromMinutes(30).TotalSeconds,
                     AlwaysIncludeUserClaimsInIdToken = true,
 
-                    
+                    AllowOfflineAccess = true,
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -52,6 +50,15 @@ namespace IdentityServer.Infrastructure.Helpers
                     {
                         "http://localhost:3000/index.html"
                     },
+                    
+                    AccessTokenType = AccessTokenType.Jwt,
+                    
+                    RequireClientSecret = true,
+                    
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".ToSha256())
+                    }
                 }
             };
         }

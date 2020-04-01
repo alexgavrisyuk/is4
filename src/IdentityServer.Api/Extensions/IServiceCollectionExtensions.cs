@@ -1,4 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using IdentityServer.Domain;
 using IdentityServer.Infrastructure;
 using IdentityServer.Infrastructure.Helpers;
@@ -7,12 +10,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace IdentityServer.Api.Extensions
 {
     public static class IServiceCollectionExtensions
     {
-        public static void ConfigureIdentityServer(this IServiceCollection services, IConfiguration configuration)
+        public static void ConfigureIdentityServer(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
             var migrationsAssembly = typeof(ApplicationDbContext).GetTypeInfo().Assembly.GetName().Name;
             var connectionString = configuration.GetConnectionString("DefaultDb");
@@ -35,7 +41,8 @@ namespace IdentityServer.Api.Extensions
                 // .AddInMemoryApiResources(Config.GetApiResources())
                 // .AddInMemoryClients(Config.GetClients())
                 // .AddTestUsers()
-                .AddDeveloperSigningCredential()
+                // .AddDeveloperSigningCredential()
+                .AddSigningCredential(GetCerfificate(environment))
                 .AddAspNetIdentity<ApplicationUser>()
                 // this adds the config data from DB (clients, resources)
                 .AddConfigurationStore(options =>
@@ -54,18 +61,53 @@ namespace IdentityServer.Api.Extensions
             {
                 options.Cookie.Name = "Identity.Cookie";
             });
-            
-            // services.AddAuthorization(o =>
-            // {
-            //     o.DefaultPolicy = new AuthorizationPolicyBuilder()
-            //         .RequireAuthenticatedUser().Build();
-            // });
-            //
-            // services.AddAuthentication("Cookie")
-            //     .AddCookie("Cookie", config =>
-            //     {
-            //         config.Cookie.Name = "Cookie";
-            //     });
+        }
+
+        public static X509Certificate2 GetCerfificate(IHostEnvironment _env)
+        {
+            X509Certificate2 cert;
+            cert = new X509Certificate2(Path.Combine(_env.ContentRootPath, "IdentityServer4Auth.pfx"), "");
+            Log.Logger.Information($"Falling back to cert from file. Successfully loaded: {cert.Thumbprint}");
+
+            return cert;
         }
     }
+    
+    //todo: client code
+    // public static class ServiceCollectionExtensions
+    // {
+    //     public static void AddAuth(this IServiceCollection services, IHostEnvironment hostEnvironment)
+    //     {
+    //         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+    //         //
+    //         
+    //         services.AddAuthentication(options =>
+    //             {
+    //                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    //                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    //             })
+    //             .AddJwtBearer(options =>
+    //             {
+    //                 // if don`t specified, token parameters should be presented (offline auth)
+    //                 // options.Authority = "http://localhost:5000/";
+    //
+    //                 // name of the API resource
+    //                 options.Audience = "api1";
+    //
+    //
+    //                 options.RequireHttpsMetadata = false;
+    //
+    //                 options.SaveToken = true;
+    //                 
+    //                 
+    //                 options.TokenValidationParameters = new TokenValidationParameters()
+    //                 {
+    //                     ValidateIssuer = true,
+    //                     ValidateIssuerSigningKey = true,
+    //                     ValidIssuer = "http://localhost:5000",
+    //                     // IssuerSigningKey = new X509SecurityKey(new X509Certificate2(Path.Combine(hostEnvironment.ContentRootPath, "myapp.pfx"), "testcert"))
+    //                     IssuerSigningKey = new X509SecurityKey(new X509Certificate2(Path.Combine(hostEnvironment.ContentRootPath, "IdentityServer4Auth.cer"), ""))
+    //                 };
+    //             });
+    //     }
 }
